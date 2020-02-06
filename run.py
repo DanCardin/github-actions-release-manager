@@ -1,12 +1,18 @@
 import json
+import argparse
 import os
 
 # import requests
 
 
 def run():
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('repo-token', help='an integer for the accumulator')
+    args = parser.parse_args()
+    print(args)
     github_event_path = os.environ['GITHUB_EVENT_PATH']
-    gitbhub_token = os.environ['GITHUB_TOKEN']
+
+    # gitbhub_token = os.environ['GITHUB_TOKEN']
 
     with open(github_event_path, 'rb') as f:
         github_event = json.loads(f)
