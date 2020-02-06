@@ -6,7 +6,7 @@ import os
 
 def run():
     github_event_path = os.environ['GITHUB_EVENT_PATH']
-    github_token = os.environ['INPUT_REPO_TOKEN']
+    github_token = os.environ['INPUT_REPO-TOKEN']
 
     with open(github_event_path, 'rb') as f:
         github_event = json.loads(f)
