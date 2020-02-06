@@ -11,10 +11,11 @@ jobs:
     name: weat
     runs-on: ubuntu-latest
     steps:
-      - name: sdfasdffasd
-        uses: ./
+      - uses: actions/checkout@v2
       - name: asdkfj
         run: ls
+      - name: sdfasdffasd
+        uses: ./
 
       # - name: Commit changes
       #   uses: EndBug/add-and-commit@v2
