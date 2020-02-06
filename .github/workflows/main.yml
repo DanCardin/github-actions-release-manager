@@ -1,5 +1,8 @@
 name: release-check
 on:
+  issue_comment:
+    types: [created]
+
   pull_request_review_comment:
     types: [created]
 
@@ -9,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: sdfasdffasd
-        uses: ./
+        uses: ../
 
       # - name: Commit changes
       #   uses: EndBug/add-and-commit@v2
