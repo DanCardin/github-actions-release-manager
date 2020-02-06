@@ -1,4 +1,4 @@
-FROM python:slim-latest
+FROM python:3-slim
 
 LABEL "com.github.actions.name"="release-manager"
 LABEL "com.github.actions.description"="Perform a release based on the PR comments."
