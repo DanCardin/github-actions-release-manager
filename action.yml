@@ -1,0 +1,10 @@
+name: 'release-manager'
+description: 'Perform a release based on the PR comments.'
+inputs:
+  wat:
+    description: 'Who to greet'
+    required: true
+    default: 'World'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

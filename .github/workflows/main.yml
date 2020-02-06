@@ -1,0 +1,22 @@
+name: cd
+on:
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  build:
+    name: weat
+    runs-on: ubuntu-latest
+    steps:
+      - name: sdfasdffasd
+        uses: dancardin/github-actions-release-manager@master
+
+      # - name: Commit changes
+      #   uses: EndBug/add-and-commit@v2
+      #   with:
+      #     force: true
+      #     message: "[auto] Update compiled version"
+      #     path: lib
+      #     pattern: "*.js"
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
