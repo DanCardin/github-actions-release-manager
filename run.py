@@ -1,22 +1,17 @@
 import json
-import argparse
 import os
 
 # import requests
 
 
 def run():
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('repo-token', help='an integer for the accumulator')
-    args = parser.parse_args()
-    print(args)
     github_event_path = os.environ['GITHUB_EVENT_PATH']
-
-    # gitbhub_token = os.environ['GITHUB_TOKEN']
+    github_token = os.environ['INPUT_REPO_TOKEN']
 
     with open(github_event_path, 'rb') as f:
         github_event = json.loads(f)
 
+    print(github_token)
     print(github_event)
 
     print()
@@ -28,7 +23,7 @@ def run():
 if __name__ == '__main__':
     run()
 
-# return unless github_event['action'] == 'created'
+# eturn unless github_event['action'] == 'created'
 #
 # body = File.read('/github/workspace/action-add-qa-message/qa_list.md')
 #
