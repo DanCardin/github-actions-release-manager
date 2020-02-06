@@ -8,5 +8,5 @@ LABEL "com.github.actions.color"="yellow"
 # COPY requirements.txt
 # RUN pip install -r requirements.txt
 
-COPY "run.py" .
+ENTRYPOINT [ "python" ]
 CMD [ "run.py" ]
