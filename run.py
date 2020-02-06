@@ -9,7 +9,7 @@ def run():
     github_token = os.environ['INPUT_REPO-TOKEN']
 
     with open(github_event_path, 'rb') as f:
-        github_event = json.loads(f)
+        github_event = json.load(f)
 
     print(github_token)
     print(github_event)
