@@ -12,8 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: asdkfj
-        run: ls
       - name: sdfasdffasd
         uses: ./
 
