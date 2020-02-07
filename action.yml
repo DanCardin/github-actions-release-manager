@@ -1,9 +1,19 @@
 name: 'release-manager'
 description: 'Perform a release based on the PR comments.'
 inputs:
-  wat:
-    description: 'Who to greet'
-    default: 'World'
+  bump-files:
+    description: 'The files which can change as a result of a bump.'
+    required: false
+    default: '.'
+  bump-command-patch:
+    description: 'The command to execute when executing a patch bump'
+    required: false
+  bump-command-minor:
+    description: 'The command to execute when executing a minor bump'
+    required: false
+  bump-command-major:
+    description: 'The command to execute when executing a major bump'
+    required: false
 runs:
   using: 'docker'
   image: 'Dockerfile'

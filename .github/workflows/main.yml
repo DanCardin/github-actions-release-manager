@@ -16,13 +16,6 @@ jobs:
         uses: ./
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Commit changes
-      #   uses: EndBug/add-and-commit@v2
-      #   with:
-      #     force: true
-      #     message: "[auto] Update compiled version"
-      #     path: lib
-      #     pattern: "*.js"
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          bump-command-patch: poetry version patch
+          bump-command-minor: poetry version minor
+          bump-command-major: poetry version major
