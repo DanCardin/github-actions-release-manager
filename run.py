@@ -1,4 +1,5 @@
 import json
+import subprocess
 import enum
 import shlex
 import argparse
@@ -8,6 +9,7 @@ from github3 import login
 
 
 class BumpAmount(enum.Enum):
+    none = None
     patch = "patch"
     minor = "minor"
 
@@ -22,7 +24,7 @@ parser = argparse.ArgumentParser(prog="merge", description="Process some integer
 parser.add_argument(
     "--bump",
     type=BumpAmount,
-    default=BumpAmount.minor,
+    default=BumpAmount.none,
     help="an integer for the accumulator",
 )
 parser.add_argument(
@@ -53,6 +55,14 @@ def run():
     github_event_path = os.environ["GITHUB_EVENT_PATH"]
     github_token = os.environ["INPUT_REPO-TOKEN"]
     repository = os.environ["GITHUB_REPOSITORY"]
+    bump_files = os.environ.get("INPUT_BUMP-FILES", '.').split(',')
+
+    bump_commands = {
+        None: None,
+        BumpAmount.patch: os.environ.get("INPUT_BUMP-COMMAND-PATCH")
+        BumpAmount.minor: os.environ.get("INPUT_BUMP-COMMAND-MINOR")
+        BumpAmount.major: os.environ.get("INPUT_BUMP-COMMAND-MAJOR")
+    }
 
     with open(github_event_path, "rb") as f:
         github_event = json.load(f)
@@ -62,6 +72,19 @@ def run():
     comment_body = github_event["comment"]["body"]
 
     command = parse_command(comment_body)
+
+    bump_command = bump_commands.get(command.bump)
+    if bump_command:
+        subprocess.call(shlex.split(bump_command))
+
+        subprocess.call(shlex.split(f"git config --global user.name 'Merge Manager (Github Action)'"))
+        subprocess.call(shlex.split(f"git config --global user.email 'actions@github.com'"))
+        for file in bump_files:
+            subprocess.call(shlex.split(f'git add {file}'))
+
+        subprocess.call(shlex.split(f"git commit -m 'Bumping version'"))
+
+        subprocess.call(shlex.split(f"git push -u origin HEAD"))
 
     gh = login(token=github_token)
     pull_request = gh.pull_request(user, repo, issue_number)
