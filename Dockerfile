@@ -5,8 +5,8 @@ LABEL "com.github.actions.description"="Perform a release based on the PR commen
 LABEL "com.github.actions.icon"="check-square"
 LABEL "com.github.actions.color"="yellow"
 
-# COPY requirements.txt
-# RUN pip install -r requirements.txt
+COPY requirements.txt
+RUN pip install -r requirements.txt
 
 ENTRYPOINT [ "python" ]
 CMD [ "run.py" ]
