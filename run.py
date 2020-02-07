@@ -12,6 +12,7 @@ class BumpAmount(enum.Enum):
     none = None
     patch = "patch"
     minor = "minor"
+    major = "major"
 
 
 class MergeMethod(enum.Enum):
