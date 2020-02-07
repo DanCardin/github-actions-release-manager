@@ -93,9 +93,6 @@ def run():
 
     print(github_event)
 
-    print()
-    print()
-
     print(os.environ)
 
 
