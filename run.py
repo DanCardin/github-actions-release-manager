@@ -66,7 +66,7 @@ def run():
     gh = login(token=github_token)
     pull_request = gh.pull_request(user, repo, issue_number)
     if pull_request.mergeable:
-        pull_request.merge(merge_method=command)
+        pull_request.merge(merge_method=command.method.value)
 
     print(github_token)
     print(github_event)
