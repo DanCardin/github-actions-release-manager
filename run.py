@@ -68,7 +68,6 @@ def run():
     if pull_request.mergeable:
         pull_request.merge(merge_method=command)
 
-    print(github_token)
     print(github_event)
 
     print()
