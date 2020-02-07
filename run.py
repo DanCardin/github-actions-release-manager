@@ -74,6 +74,9 @@ def run():
     command = parse_command(comment_body)
 
     bump_command = bump_commands.get(command.bump)
+    print(bump_command)
+    if not bump_command:
+        bump_command = 'poetry version minor'
     if bump_command:
         subprocess.call(shlex.split(bump_command))
 

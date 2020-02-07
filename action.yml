@@ -1,6 +1,9 @@
 name: 'release-manager'
 description: 'Perform a release based on the PR comments.'
 inputs:
+  repo-token:
+    description: 'The github token required to merge the PR.'
+    required: true
   bump-files:
     description: 'The files which can change as a result of a bump.'
     required: false

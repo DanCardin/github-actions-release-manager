@@ -3,9 +3,6 @@ on:
   issue_comment:
     types: [created]
 
-  pull_request_review_comment:
-    types: [created]
-
 jobs:
   release-check:
     name: weat
@@ -16,6 +13,7 @@ jobs:
         uses: ./
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          bump-files: pyproject.toml
           bump-command-patch: poetry version patch
           bump-command-minor: poetry version minor
           bump-command-major: poetry version major
