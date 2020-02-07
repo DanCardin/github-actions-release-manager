@@ -55,13 +55,13 @@ def run():
     github_event_path = os.environ["GITHUB_EVENT_PATH"]
     github_token = os.environ["INPUT_REPO-TOKEN"]
     repository = os.environ["GITHUB_REPOSITORY"]
-    bump_files = os.environ.get("INPUT_BUMP-FILES", '.').split(',')
+    bump_files = os.environ.get("INPUT_BUMP-FILES", ".").split(",")
 
     bump_commands = {
         None: None,
-        BumpAmount.patch: os.environ.get("INPUT_BUMP-COMMAND-PATCH")
-        BumpAmount.minor: os.environ.get("INPUT_BUMP-COMMAND-MINOR")
-        BumpAmount.major: os.environ.get("INPUT_BUMP-COMMAND-MAJOR")
+        BumpAmount.patch: os.environ.get("INPUT_BUMP-COMMAND-PATCH"),
+        BumpAmount.minor: os.environ.get("INPUT_BUMP-COMMAND-MINOR"),
+        BumpAmount.major: os.environ.get("INPUT_BUMP-COMMAND-MAJOR"),
     }
 
     with open(github_event_path, "rb") as f:
@@ -76,14 +76,20 @@ def run():
     bump_command = bump_commands.get(command.bump)
     print(bump_command)
     if not bump_command:
-        bump_command = 'poetry version minor'
+        bump_command = "poetry version minor"
     if bump_command:
         subprocess.call(shlex.split(bump_command))
 
-        subprocess.call(shlex.split(f"git config --global user.name 'Merge Manager (Github Action)'"))
-        subprocess.call(shlex.split(f"git config --global user.email 'actions@github.com'"))
+        subprocess.call(
+            shlex.split(
+                f"git config --global user.name 'Merge Manager (Github Action)'"
+            )
+        )
+        subprocess.call(
+            shlex.split(f"git config --global user.email 'actions@github.com'")
+        )
         for file in bump_files:
-            subprocess.call(shlex.split(f'git add {file}'))
+            subprocess.call(shlex.split(f"git add {file}"))
 
         subprocess.call(shlex.split(f"git commit -m 'Bumping version'"))
 
