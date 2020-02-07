@@ -46,7 +46,7 @@ def parse_command(command):
     split_command = shlex.split(command)
     split_command = split_command[1:]
 
-    args = parser.parse_args(split_command)
+    return parser.parse_args(split_command)
 
 
 def run():
