@@ -5,11 +5,15 @@ on:
 
 jobs:
   release-check:
-    name: weat
+    name: Release on /merge command
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: sdfasdffasd
+      - uses: actions/setup-python@v1
+      - uses: dschep/install-poetry-action@v1.3
+        with:
+          version: 1.0.0
+      - name: Release check
         uses: ./
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}

@@ -69,6 +69,8 @@ def run():
     with open(github_event_path, "rb") as f:
         github_event = json.load(f)
 
+    print(github_event)
+
     user, repo = repository.split("/")
     issue_number = github_event["issue"]["number"]
     comment_body = github_event["comment"]["body"]
