@@ -72,29 +72,33 @@ def run():
     issue_number = github_event["issue"]["number"]
     comment_body = github_event["comment"]["body"]
 
+    print(command)
     command = parse_command(comment_body)
 
-    bump_command = bump_commands.get(command.bump)
-    print(bump_command)
-    if not bump_command:
-        bump_command = "poetry version minor"
-    if bump_command:
-        subprocess.call(shlex.split(bump_command))
+    try:
+        bump_command = bump_commands.get(command.bump)
+        print(bump_command)
+        if not bump_command:
+            bump_command = "poetry version minor"
+        if bump_command:
+            subprocess.call(shlex.split(bump_command))
 
-        subprocess.call(
-            shlex.split(
-                f"git config --global user.name 'Merge Manager (Github Action)'"
+            subprocess.call(
+                shlex.split(
+                    f"git config --global user.name 'Merge Manager (Github Action)'"
+                )
             )
-        )
-        subprocess.call(
-            shlex.split(f"git config --global user.email 'actions@github.com'")
-        )
-        for file in bump_files:
-            subprocess.call(shlex.split(f"git add {file}"))
+            subprocess.call(
+                shlex.split(f"git config --global user.email 'actions@github.com'")
+            )
+            for file in bump_files:
+                subprocess.call(shlex.split(f"git add {file}"))
 
-        subprocess.call(shlex.split(f"git commit -m 'Bumping version'"))
+            subprocess.call(shlex.split(f"git commit -m 'Bumping version'"))
 
-        subprocess.call(shlex.split(f"git push -u origin HEAD"))
+            subprocess.call(shlex.split(f"git push -u origin HEAD"))
+    except Exception as e:
+        print(e)
 
     gh = login(token=github_token)
     pull_request = gh.pull_request(user, repo, issue_number)
