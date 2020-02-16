@@ -72,8 +72,8 @@ def run():
     issue_number = github_event["issue"]["number"]
     comment_body = github_event["comment"]["body"]
 
-    print(command)
     command = parse_command(comment_body)
+    print(command)
 
     try:
         bump_command = bump_commands.get(command.bump)
