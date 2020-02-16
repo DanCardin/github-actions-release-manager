@@ -43,10 +43,11 @@ parser.add_argument(
 
 
 def parse_command(command):
-    if not command.startswith("/merge "):
+    split_command = shlex.split(command)
+
+    if split_command[0] != "/merge":
         return
 
-    split_command = shlex.split(command)
     split_command = split_command[1:]
 
     return parser.parse_args(split_command)
@@ -54,8 +55,8 @@ def parse_command(command):
 
 def run():
     github_event_path = os.environ["GITHUB_EVENT_PATH"]
-    github_token = os.environ["INPUT_REPO-TOKEN"]
     repository = os.environ["GITHUB_REPOSITORY"]
+    github_token = os.environ.get("INPUT_REPO-TOKEN")
     bump_files = os.environ.get("INPUT_BUMP-FILES", ".").split(",")
 
     bump_commands = {
@@ -73,6 +74,8 @@ def run():
     comment_body = github_event["comment"]["body"]
 
     command = parse_command(comment_body)
+    if not command:
+        return
     print(command)
 
     try:
