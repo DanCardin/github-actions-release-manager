@@ -1,8 +1,7 @@
 # Github Actions release manager
 
-Atomically merge version-bumped releases to your repo.
-
-Comment: `/merge` on a PR, as someone with permissions to merge a PR.
+Atomically merge version-bumped releases to your repo upon a trigger comment from a user
+with permission to merge a PR.
 
 ```
 Performs a bump/merge on a pull request
