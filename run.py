@@ -147,30 +147,30 @@ class CommandContext:
     def bump_version(self):
         print("asdf")
         try:
-            subprocess.run(shlex.split("ls -la ~/"), capture_output=True)  # nosec
+            print(subprocess.run(shlex.split("ls -la ~/"), capture_output=True))  # nosec
         except Exception:
             pass
 
         print("foo")
         try:
-            subprocess.run(
+            print(subprocess.run(
                 shlex.split("ls -la ~/.poetry/bin"), capture_output=True
-            )  # nosec
+            ))  # nosec
         except Exception:
             pass
 
         print("lkjwlkrjwlejr")
         try:
-            subprocess.run(
+            print(subprocess.run(
                 shlex.split("ls -la /github/workspace"), capture_output=True
-            )  # nosec
+            ))  # nosec
         except Exception:
             pass
 
         print("meow")
         try:
-            subprocess.run(shlex.split("ls -la /github/home"), capture_output=True
-            )  # nosec
+            print(subprocess.run(shlex.split("ls -la /github/home"), capture_output=True
+            ))  # nosec
         except Exception:
             pass
 
@@ -184,7 +184,7 @@ class CommandContext:
         ]
 
         for command in commands:
-            subprocess.run(shlex.split(command), capture_output=True)  # nosec
+            print(subprocess.run(shlex.split(command), capture_output=True))  # nosec
 
     def merge(self):
         if not self.command.method:
