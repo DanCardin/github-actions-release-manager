@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import json
 from typing import Optional, Dict, Any
 from dataclasses import dataclass
@@ -85,12 +86,12 @@ class CommandContext:
 
         bump_files = cls.extract_bump_files(env)
         command = cls.extract_command(parser, event["comment"]["body"])
-        bump_command = cls.extract_bump_command(command)
+        bump_command = cls.extract_bump_command(command, env)
 
         return cls(
             event=event,
             issue=issue,
-            token=os.environ["INPUT_REPO-TOKEN"],
+            token=os.environ.get("INPUT_REPO-TOKEN"),
             bump_files=bump_files,
             bump_command=bump_command,
             command=command,
@@ -114,16 +115,21 @@ class CommandContext:
         return raw_bump_files.split(",")
 
     @staticmethod
-    def extract_bump_command(env, command):
+    def extract_bump_command(command, env):
+        if not command:
+            return
+
         default_base = env.get("INPUT_BUMP-COMMAND-BASE")
 
         bump_commands = {}
         for variant in BumpAmount:
-            command = env.get("INPUT_BUMP-COMMAND-{}".format(variant.value.upper()))
-            if not command and default_base:
-                command = " ".join([default_base, variant.value])
+            bump_command = env.get(
+                "INPUT_BUMP-COMMAND-{}".format(variant.value.upper())
+            )
+            if not bump_command and default_base:
+                bump_command = " ".join([default_base, variant.value])
 
-            bump_commands[variant] = command
+            bump_commands[variant] = bump_command
 
         return bump_commands.get(command.bump)
 
@@ -135,6 +141,7 @@ class CommandContext:
 
         split_command = split_command[1:]
 
+        print(split_command)
         return parser.parse_args(split_command)
 
     def bump_version(self):
@@ -158,6 +165,9 @@ class CommandContext:
             return
 
         client = github3.login(token=self.token)
+        if not client:
+            return
+
         pull_request = client.pull_request(
             self.issue.user, self.issue.repo, self.issue.number
         )
@@ -187,15 +197,16 @@ def create_parser():
         "--method",
         type=MergeMethod.parse,
         default=MergeMethod.merge,
-        help="The kinf of merge to perform, values: merge, squash, rebase",
+        help="The kind of merge to perform, values: merge, squash, rebase",
     )
+    return parser
 
 
 def run():
     logging.basicConfig()
 
     parser = create_parser()
-    context = CommandContext.from_env(os.environ, parser)
+    context = CommandContext.from_env(parser, os.environ)
 
     if not context.has_permission:
         log.info("User does not have permission to merge, stopping.")
