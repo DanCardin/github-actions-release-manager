@@ -145,20 +145,13 @@ class CommandContext:
         return parser.parse_args(split_command)
 
     def bump_version(self):
-        try:
-            print(
-                subprocess.run(shlex.split("ls -la /github/home"), capture_output=True)
-            )  # nosec
-        except Exception:
-            pass
-
         commands = [
             os.path.expanduser(self.bump_command),
             "git config --global user.name 'Release Manager (Github Action)'",
             "git config --global user.email 'actions@github.com'",
             *(f"git add {bump_file}" for bump_file in self.bump_files),
             "git commit -m 'Bumping version'",
-            "git push -e origin HEAD",
+            "git push origin",
         ]
 
         for command in commands:
