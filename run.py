@@ -147,35 +147,45 @@ class CommandContext:
     def bump_version(self):
         print("asdf")
         try:
-            print(subprocess.run(shlex.split("ls -la ~/"), capture_output=True))  # nosec
+            print(
+                subprocess.run(
+                    shlex.split(os.path.expanduser("ls -l ~/")), capture_output=True
+                )
+            )  # nosec
         except Exception:
             pass
 
         print("foo")
         try:
-            print(subprocess.run(
-                shlex.split("ls -la ~/.poetry/bin"), capture_output=True
-            ))  # nosec
+            print(
+                subprocess.run(
+                    shlex.split(os.path.expanduser("ls -l ~/.poetry/bin")),
+                    capture_output=True,
+                )
+            )  # nosec
         except Exception:
             pass
 
         print("lkjwlkrjwlejr")
         try:
-            print(subprocess.run(
-                shlex.split("ls -la /github/workspace"), capture_output=True
-            ))  # nosec
+            print(
+                subprocess.run(
+                    shlex.split("ls -l /github/workspace"), capture_output=True
+                )
+            )  # nosec
         except Exception:
             pass
 
         print("meow")
         try:
-            print(subprocess.run(shlex.split("ls -la /github/home"), capture_output=True
-            ))  # nosec
+            print(
+                subprocess.run(shlex.split("ls -l /github/home"), capture_output=True)
+            )  # nosec
         except Exception:
             pass
 
         commands = [
-            self.bump_command,
+            os.path.expanduser(self.bump_command),
             "git config --global user.name 'Release Manager (Github Action)'",
             "git config --global user.email 'actions@github.com'",
             *(f"git add {bump_file}" for bump_file in self.bump_files),
