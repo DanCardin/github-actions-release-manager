@@ -145,6 +145,30 @@ class CommandContext:
         return parser.parse_args(split_command)
 
     def bump_version(self):
+        print("asdf")
+        try:
+            subprocess.call(shlex.split("ls -la ~/"))  # nosec
+        except Exception:
+            pass
+
+        print("foo")
+        try:
+            subprocess.call(shlex.split("ls -la ~/.poetry/bin"))  # nosec
+        except Exception:
+            pass
+
+        print("lkjwlkrjwlejr")
+        try:
+            subprocess.call(shlex.split("ls -la /github/workspace"))  # nosec
+        except Exception:
+            pass
+
+        print("meow")
+        try:
+            subprocess.call(shlex.split("ls -la /github/home"))  # nosec
+        except Exception:
+            pass
+
         commands = [
             self.bump_command,
             "git config --global user.name 'Release Manager (Github Action)'",
