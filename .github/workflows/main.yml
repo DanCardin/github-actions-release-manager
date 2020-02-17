@@ -18,4 +18,4 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           bump-files: pyproject.toml
-          bump-command-base: ~/.poetry/bin/poetry version
+          bump-command-base: poetry version
