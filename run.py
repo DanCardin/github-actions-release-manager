@@ -1,18 +1,31 @@
 import json
-import subprocess
+from typing import Optional, Dict, Any
+from dataclasses import dataclass
+import subprocess  # nosec
 import enum
 import shlex
 import argparse
 import os
+import logging
 
-from github3 import login
+import github3
+
+
+log = logging.getLogger(__name__)
 
 
 class BumpAmount(enum.Enum):
-    none = None
     patch = "patch"
     minor = "minor"
     major = "major"
+
+    @classmethod
+    def parse(cls, value: str):
+        try:
+            return cls(value)
+        except ValueError:
+            log.warning("Unhandled bump amount: %s", value)
+            return
 
 
 class MergeMethod(enum.Enum):
@@ -20,97 +33,182 @@ class MergeMethod(enum.Enum):
     squash = "squash"
     rebase = "rebase"
 
-
-parser = argparse.ArgumentParser(prog="merge", description="Process some integers.")
-parser.add_argument(
-    "--bump",
-    type=BumpAmount,
-    default=BumpAmount.none,
-    help="an integer for the accumulator",
-)
-parser.add_argument(
-    "-D",
-    "--delete-branch",
-    action="store_true",
-    help="sum the integers (default: find the max)",
-)
-parser.add_argument(
-    "--method",
-    type=MergeMethod,
-    default=MergeMethod.merge,
-    help="sum the integers (default: find the max)",
-)
+    @classmethod
+    def parse(cls, value: str):
+        try:
+            return cls(value)
+        except ValueError:
+            log.warning("Unhandled merge method: %s", value)
+            return
 
 
-def parse_command(command):
-    split_command = shlex.split(command)
+class AuthorAssociation(enum.Enum):
+    none = "NONE"
+    collaborator = "COLLABORATOR"
+    owner = "OWNER"
 
-    if split_command[0] != "/merge":
-        return
+    @classmethod
+    def parse(cls, value: str):
+        try:
+            return cls(value)
+        except ValueError:
+            log.warning("Unhandled author association: %s", value)
+            return cls.none
 
-    split_command = split_command[1:]
 
-    return parser.parse_args(split_command)
+@dataclass
+class Issue:
+    user: str
+    repo: str
+    number: str
+
+
+@dataclass
+class CommandContext:
+    event: Dict[str, Any]
+    issue: Issue
+    token: str
+    bump_files: str
+    bump_command: Optional[BumpAmount]
+    command: argparse.Namespace
+
+    @classmethod
+    def from_env(cls, parser, env=os.environ):
+        github_event_path = os.environ["GITHUB_EVENT_PATH"]
+        with open(github_event_path, "rb") as f:
+            event = json.load(f)
+
+        fq_repo = os.environ["GITHUB_REPOSITORY"]
+        user, repo = fq_repo.split("/")
+        issue_number = event["issue"]["number"]
+        issue = Issue(user=user, repo=repo, number=issue_number)
+
+        bump_files = cls.extract_bump_files(env)
+        command = cls.extract_command(parser, event["comment"]["body"])
+        bump_command = cls.extract_bump_command(command)
+
+        return cls(
+            event=event,
+            issue=issue,
+            token=os.environ["INPUT_REPO-TOKEN"],
+            bump_files=bump_files,
+            bump_command=bump_command,
+            command=command,
+        )
+
+    @property
+    def has_permission(self) -> bool:
+        author_association = AuthorAssociation.parse(
+            self.event["comment"]["author_association"]
+        )
+        return author_association in {
+            AuthorAssociation.owner,
+            AuthorAssociation.collaborator,
+        }
+
+    @staticmethod
+    def extract_bump_files(env):
+        raw_bump_files = os.environ.get("INPUT_BUMP-FILES")
+        if not raw_bump_files:
+            raw_bump_files = "."
+        return raw_bump_files.split(",")
+
+    @staticmethod
+    def extract_bump_command(env, command):
+        default_base = env.get("INPUT_BUMP-COMMAND-BASE")
+
+        bump_commands = {}
+        for variant in BumpAmount:
+            command = env.get("INPUT_BUMP-COMMAND-{}".format(variant.value.upper()))
+            if not command and default_base:
+                command = " ".join([default_base, variant.value])
+
+            bump_commands[variant] = command
+
+        return bump_commands.get(command.bump)
+
+    @staticmethod
+    def extract_command(parser, raw_command):
+        split_command = shlex.split(raw_command)
+        if split_command[0] != "/merge":
+            return
+
+        split_command = split_command[1:]
+
+        return parser.parse_args(split_command)
+
+    def bump_version(self):
+        commands = [
+            self.bump_command,
+            "git config --global user.name 'Release Manager (Github Action)'",
+            "git config --global user.email 'actions@github.com'",
+            *(f"git add {bump_file}" for bump_file in self.bump_files),
+            "git commit -m 'Bumping version'",
+            "git push -e origin HEAD",
+        ]
+
+        try:
+            for command in commands:
+                subprocess.call(shlex.split(command))  # nosec
+        except Exception as e:
+            print(e)
+
+    def merge(self):
+        if not self.command.method:
+            return
+
+        client = github3.login(token=self.token)
+        pull_request = client.pull_request(
+            self.issue.user, self.issue.repo, self.issue.number
+        )
+        if not pull_request.mergeable:
+            return
+
+        pull_request.merge(merge_method=self.command.method.value)
+
+
+def create_parser():
+    parser = argparse.ArgumentParser(
+        prog="merge", description="Performs a bump/merge on a pull request"
+    )
+    parser.add_argument(
+        "--bump",
+        type=BumpAmount.parse,
+        default=None,
+        help="The kind of version bump to perform, values: patch, minor, major",
+    )
+    parser.add_argument(
+        "-D",
+        "--delete-branch",
+        action="store_true",
+        help="Whether to delete the branch after performing the merge",
+    )
+    parser.add_argument(
+        "--method",
+        type=MergeMethod.parse,
+        default=MergeMethod.merge,
+        help="The kinf of merge to perform, values: merge, squash, rebase",
+    )
 
 
 def run():
-    github_event_path = os.environ["GITHUB_EVENT_PATH"]
-    repository = os.environ["GITHUB_REPOSITORY"]
-    github_token = os.environ.get("INPUT_REPO-TOKEN")
-    bump_files = os.environ.get("INPUT_BUMP-FILES", ".").split(",")
+    logging.basicConfig()
 
-    bump_commands = {
-        None: None,
-        BumpAmount.patch: os.environ.get("INPUT_BUMP-COMMAND-PATCH"),
-        BumpAmount.minor: os.environ.get("INPUT_BUMP-COMMAND-MINOR"),
-        BumpAmount.major: os.environ.get("INPUT_BUMP-COMMAND-MAJOR"),
-    }
+    parser = create_parser()
+    context = CommandContext.from_env(os.environ, parser)
 
-    with open(github_event_path, "rb") as f:
-        github_event = json.load(f)
-
-    print(github_event)
-
-    user, repo = repository.split("/")
-    issue_number = github_event["issue"]["number"]
-    comment_body = github_event["comment"]["body"]
-
-    command = parse_command(comment_body)
-    if not command:
+    if not context.has_permission:
+        log.info("User does not have permission to merge, stopping.")
         return
-    print(command)
 
-    try:
-        bump_command = bump_commands.get(command.bump)
-        print(bump_command)
-        if not bump_command:
-            bump_command = "poetry version minor"
-        if bump_command:
-            subprocess.call(shlex.split(bump_command))
+    if not context.command:
+        log.info("Comment was not a merge command, stopping.")
+        return
 
-            subprocess.call(
-                shlex.split(
-                    f"git config --global user.name 'Merge Manager (Github Action)'"
-                )
-            )
-            subprocess.call(
-                shlex.split(f"git config --global user.email 'actions@github.com'")
-            )
-            for file in bump_files:
-                subprocess.call(shlex.split(f"git add {file}"))
+    if context.bump_command:
+        context.bump_version()
 
-            subprocess.call(shlex.split(f"git commit -m 'Bumping version'"))
-
-            subprocess.call(shlex.split(f"git push -u origin HEAD"))
-    except Exception as e:
-        print(e)
-
-    gh = login(token=github_token)
-    pull_request = gh.pull_request(user, repo, issue_number)
-    if pull_request.mergeable:
-        pull_request.merge(merge_method=command.method.value)
-
-    print(os.environ)
+    context.merge()
 
 
 if __name__ == "__main__":
