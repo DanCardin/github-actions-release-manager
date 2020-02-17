@@ -145,41 +145,9 @@ class CommandContext:
         return parser.parse_args(split_command)
 
     def bump_version(self):
-        print("asdf")
         try:
             print(
-                subprocess.run(
-                    shlex.split(os.path.expanduser("ls -l ~/")), capture_output=True
-                )
-            )  # nosec
-        except Exception:
-            pass
-
-        print("foo")
-        try:
-            print(
-                subprocess.run(
-                    shlex.split(os.path.expanduser("ls -l ~/.poetry/bin")),
-                    capture_output=True,
-                )
-            )  # nosec
-        except Exception:
-            pass
-
-        print("lkjwlkrjwlejr")
-        try:
-            print(
-                subprocess.run(
-                    shlex.split("ls -l /github/workspace"), capture_output=True
-                )
-            )  # nosec
-        except Exception:
-            pass
-
-        print("meow")
-        try:
-            print(
-                subprocess.run(shlex.split("ls -l /github/home"), capture_output=True)
+                subprocess.run(shlex.split("ls -la /github/home"), capture_output=True)
             )  # nosec
         except Exception:
             pass
@@ -241,6 +209,7 @@ def create_parser():
 def run():
     logging.basicConfig()
 
+    print(os.environ)
     parser = create_parser()
     context = CommandContext.from_env(parser, os.environ)
 
