@@ -154,11 +154,8 @@ class CommandContext:
             "git push -e origin HEAD",
         ]
 
-        try:
-            for command in commands:
-                subprocess.call(shlex.split(command))  # nosec
-        except Exception as e:
-            print(e)
+        for command in commands:
+            subprocess.call(shlex.split(command))  # nosec
 
     def merge(self):
         if not self.command.method:

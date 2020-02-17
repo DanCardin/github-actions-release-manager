@@ -18,6 +18,4 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           bump-files: pyproject.toml
-          bump-command-patch: poetry version patch
-          bump-command-minor: poetry version minor
-          bump-command-major: poetry version major
+          bump-command-base: ~/.poetry/bin/poetry version

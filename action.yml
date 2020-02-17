@@ -8,6 +8,11 @@ inputs:
     description: 'The files which can change as a result of a bump.'
     required: false
     default: '.'
+  bump-command-base:
+    description: >
+      The command to execute when executing all bumps. If specified, there is no reason to
+      specify any of `bump-command-patch`, `bump-command-minor`, or `bump-command-major`.
+    required: false
   bump-command-patch:
     description: 'The command to execute when executing a patch bump'
     required: false
